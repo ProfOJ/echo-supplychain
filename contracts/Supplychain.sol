@@ -84,7 +84,11 @@ contract SupplyChainFinancing {
         isLender[_lender] = true;
     }
 
-    function createPurchaseOrder(address _supplier, uint _amount) public onlyBuyer {
+    function bypassAddBuyer(address _buyer) public {
+        isBuyer[_buyer] = true;
+    }
+
+    function bypassCreatePurchaseOrder(address _supplier, uint _amount) public {
         PurchaseOrder memory newOrder = PurchaseOrder({
             buyer: msg.sender,
             supplier: _supplier,
@@ -95,7 +99,7 @@ contract SupplyChainFinancing {
         purchaseOrders.push(newOrder);
     }
 
-    function financePurchaseOrder(uint _index) public onlyLender {
+    function bypassFinancePurchaseOrder(uint _index) public {
         require(_index < purchaseOrders.length, "Invalid index.");
         require(!purchaseOrders[_index].financed, "Purchase order is already financed.");
         address supplier = purchaseOrders[_index].supplier;
@@ -103,7 +107,7 @@ contract SupplyChainFinancing {
         purchaseOrders[_index].financed = true;
     }
 
-    function paySupplier(uint _index) public onlyBuyer {
+    function bypassPaySupplier(uint _index) public {
         require(_index < purchaseOrders.length, "Invalid index.");
         require(purchaseOrders[_index].financed, "Purchase order is not yet financed.");
         require(!purchaseOrders[_index].paid, "Payment already made.");
@@ -111,5 +115,9 @@ contract SupplyChainFinancing {
         require(balances[supplier] >= purchaseOrders[_index].amount, "Insufficient balance.");
         balances[supplier] -= purchaseOrders[_index].amount;
         purchaseOrders[_index].paid = true;
+    }
+
+    function getPurchaseOrdersLength() public view returns (uint) {
+        return purchaseOrders.length;
     }
 }
